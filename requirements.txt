@@ -1,0 +1,21 @@
+# Deep Learning Framework
+# Note: It is recommended to install PyTorch according to your specific CUDA version from the official website.
+torch>=1.12.0
+torchvision>=0.13.0
+
+# Graph Neural Network Library (Required for graph.py and main.py)
+# Note: Please install the DGL version compatible with your CUDA version.
+dgl>=1.0.0
+
+# Data Processing & Scientific Computing
+numpy
+pandas
+scikit-learn
+
+# Image Processing
+Pillow
+
+# Visualization & Progress Bar
+matplotlib
+seaborn
+tqdm
