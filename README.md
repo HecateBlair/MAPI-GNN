@@ -1,10 +1,15 @@
 # MAPI-GNN: Multi-Activation Plane Interaction Graph Neural Network for Multimodal Medical Diagnosis
 
+[![AAAI 2026](https://img.shields.io/badge/AAAI-2026-brightgreen)](https://aaai.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Pytorch](https://img.shields.io/badge/PyTorch-1.12%2B-ee4c2c.svg)](https://pytorch.org/)
+
 This repository contains the official PyTorch implementation of the paper:
 **"MAPI-GNN: Multi-Activation Plane Interaction Graph Neural Network for Multimodal Medical Diagnosis"**, accepted at **AAAI 2026**.
 
 ## 📝 Abstract
-Graph neural networks are increasingly applied to multimodal medical diagnosis for their inherent relational modeling capabilities. However, their efficacy is often compromised by the prevailing reliance on a single, static graph built from indiscriminate features, hindering the ability to model patient-specific pathological relationships. To this end, the proposed Multi-Activation Plane Interaction Graph Neural Network (MAPI-GNN) reconstructs this single-graph paradigm by learning a multifaceted graph profile from semantically disentangled feature subspaces. The framework first uncovers latent graph-aware patterns via a multi-dimensional discriminator; these patterns then guide the dynamic construction of a stack of activation graphs; and this multifaceted profile is finally aggregated and contextualized by a relational fusion engine for a robust diagnosis. Extensive experiments on two diverse tasks, comprising over 1300 patient samples, demonstrate that MAPI-GNN significantly outperforms state-of-the-art methods.
+
+Graph neural networks are increasingly applied to multimodal medical diagnosis for their inherent relational modeling capabilities. However, their efficacy is often compromised by the prevailing reliance on a single, static graph built from indiscriminate features, hindering the ability to model patient-specific pathological relationships. To this end, the proposed **Multi-Activation Plane Interaction Graph Neural Network (MAPI-GNN)** reconstructs this single-graph paradigm by learning a multifaceted graph profile from semantically disentangled feature subspaces. The framework first uncovers latent graph-aware patterns via a multi-dimensional discriminator; these patterns then guide the dynamic construction of a stack of activation graphs; and this multifaceted profile is finally aggregated and contextualized by a relational fusion engine for a robust diagnosis. Extensive experiments on two diverse tasks, comprising over 1300 patient samples, demonstrate that MAPI-GNN significantly outperforms state-of-the-art methods.
 
 ## 🏗️ Methodology & Framework
 
@@ -22,44 +27,63 @@ This stage performs the final diagnosis using a hierarchical graph neural networ
     2.  **Inter-Sample Fusion**: A global **Fusion-Relation Graph** connects patients based on feature similarity. A GCN then propagates information across the patient population to model global distributions and perform robust classification.
 
 ## 🛠️ Requirements
-- Python >= 3.8
-- PyTorch >= 1.12.0
-- DGL (Deep Graph Library) >= 1.0.0
-- CUDA (for GPU support)
+
+* Python >= 3.8
+* PyTorch >= 1.12.0
+* DGL (Deep Graph Library) >= 1.0.0
+* CUDA (for GPU support)
 
 Install dependencies via:
 ```bash
 pip install -r requirements.txt
+
 ```
 
-🚀 Usage
-Step 1: Feature Extraction (Inductive)
+## 🚀 Usage
+
+### Step 1: Feature Extraction (Inductive)
+
 Extract deep features from raw medical images (MRI/CT).
 
-Bash
-
+```bash
+# Note: Ensure your script is named feature_extraction.py
 python feature_extraction.py --data_dir ./path/to/images --output_dir ./features
-Step 2: Manifold Learning (Unsupervised)
+
+```
+
+### Step 2: Manifold Learning (Unsupervised)
+
 Train the Concept AutoEncoder to learn the feature manifold.
 
-Bash
-
+```bash
 python discriminator.py --csv_path ./features/all_folds_features.csv --save_dir ./checkpoints
-Step 3: Graph Construction
+
+```
+
+### Step 3: Graph Construction
+
 Construct patient-specific planar graphs based on significant latent concepts.
 
-Bash
+```bash
+# The model path matches the output from discriminator.py
+python graph.py --csv_path ./features/all_folds_features.csv --model_path ./checkpoints/best_concept_autoencoder_final.pth --save_dir ./graphs
 
-python graph.py --csv_path ./features/all_folds_features.csv --model_path ./checkpoints/best_ae_fold1.pth --save_dir ./graphs
-Step 4: GNN Training & Evaluation
+```
+
+### Step 4: GNN Training & Evaluation
+
 Train the final MAPI-GNN model for classification.
 
-Bash
-
+```bash
 python main.py --csv_path ./features/all_folds_features.csv --graphs_dir ./graphs
-📂 Data Preparation
+
+```
+
+## 📂 Data Preparation
+
 Due to privacy regulations, the original medical imaging dataset cannot be shared. Please organize your data as follows:
 
+```
 root_dir/
 ├── class_0/
 │   ├── patient_001/
@@ -67,16 +91,28 @@ root_dir/
 │   │   └── modality_2/
 ├── class_1/
     ...
-📌 Citation
+
+```
+
+## 📌 Citation
+
 If you find this code useful, please cite our paper:
 
-代码段
-
+```bibtex
 @inproceedings{mapi_gnn_aaai26,
   title={MAPI-GNN: Multi-Activation Plane Interaction Graph Neural Network for Multimodal Medical Diagnosis},
-  author={Your Name and Co-authors},
+  author={Qin, Ziwei and Song, Xuhui and Huang, Deqing and Qin, Na and Li, Jun},
   booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
-  year={2026}
+  year={2026},
+  note={To appear}
 }
-📜 License
+
+```
+
+## 📜 License
+
 This project is licensed under the MIT License.
+
+```
+
+```
