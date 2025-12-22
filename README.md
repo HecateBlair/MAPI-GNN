@@ -30,3 +30,52 @@ This stage performs the final diagnosis using a hierarchical graph neural networ
 Install dependencies via:
 ```bash
 pip install -r requirements.txt
+
+🚀 Usage
+Step 1: Feature Extraction (Inductive)
+Extract deep features from raw medical images (MRI/CT).
+
+Bash
+
+python feature_extraction.py --data_dir ./path/to/images --output_dir ./features
+Step 2: Manifold Learning (Unsupervised)
+Train the Concept AutoEncoder to learn the feature manifold.
+
+Bash
+
+python discriminator.py --csv_path ./features/all_folds_features.csv --save_dir ./checkpoints
+Step 3: Graph Construction
+Construct patient-specific planar graphs based on significant latent concepts.
+
+Bash
+
+python graph.py --csv_path ./features/all_folds_features.csv --model_path ./checkpoints/best_ae_fold1.pth --save_dir ./graphs
+Step 4: GNN Training & Evaluation
+Train the final MAPI-GNN model for classification.
+
+Bash
+
+python main.py --csv_path ./features/all_folds_features.csv --graphs_dir ./graphs
+📂 Data Preparation
+Due to privacy regulations, the original medical imaging dataset cannot be shared. Please organize your data as follows:
+
+root_dir/
+├── class_0/
+│   ├── patient_001/
+│   │   ├── modality_1/
+│   │   └── modality_2/
+├── class_1/
+    ...
+📌 Citation
+If you find this code useful, please cite our paper:
+
+代码段
+
+@inproceedings{mapi_gnn_aaai26,
+  title={MAPI-GNN: Multi-Activation Plane Interaction Graph Neural Network for Multimodal Medical Diagnosis},
+  author={Your Name and Co-authors},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  year={2026}
+}
+📜 License
+This project is licensed under the MIT License.
