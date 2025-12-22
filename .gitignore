@@ -1,0 +1,26 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Data (隐私保护：不要上传任何数据文件)
+*.csv
+*.xlsx
+picai/
+data/
+
+# Model checkpoints (权重文件太大，通常不传，除非你想提供预训练模型)
+*.pth
+*.pt
+saved_models/
+checkpoints/
+
+# Output directories
+features/
+graphs/
+results/
+visualizations/
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
