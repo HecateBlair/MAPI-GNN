@@ -30,6 +30,7 @@ This stage performs the final diagnosis using a hierarchical graph neural networ
 Install dependencies via:
 ```bash
 pip install -r requirements.txt
+```
 
 🚀 Usage
 Step 1: Feature Extraction (Inductive)
