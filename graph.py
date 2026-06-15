@@ -97,7 +97,8 @@ def build_graphs(feature, significant_features, feature_impacts, latent_dim, k_n
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--csv_path', type=str, required=True, help='Input features CSV')
-    parser.add_argument('--model_path', type=str, required=True, help='Path to trained ConceptAutoEncoder')
+    # 将 --model_path 改为 --model_dir，指向存放 5 个折模型的文件夹
+    parser.add_argument('--model_dir', type=str, required=True, help='Directory containing trained ConceptAutoEncoder models')
     parser.add_argument('--save_dir', type=str, default='./graphs', help='Output directory for graphs')
     args = parser.parse_args()
 
@@ -119,26 +120,38 @@ def main():
     input_dim = features.shape[1]
 
     concept_autoencoder = ConceptAutoEncoder(input_dim, encoding_layers).to(device)
-    concept_autoencoder.load_state_dict(torch.load(args.model_path, map_location=device))
-    concept_autoencoder.eval()
 
-    for idx in tqdm(range(len(features)), desc="Constructing Graphs"):
-        feature = features[idx]
-        label = labels[idx]
-        patient_id = patient_ids[idx]
+    # 【精准修复】：引入 StratifiedKFold 严格对齐 discriminator.py 的 37 号随机种子
+    from sklearn.model_selection import StratifiedKFold
+    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=37)
 
-        significant_features, feature_impacts = analyze_significant_features(
-            concept_autoencoder, feature, device, percentage=0.1
-        )
+    # 循环读取每一折的模型，只为该折 Out-of-Fold (OOF) 的验证/测试样本建图
+    for fold, (train_idx, val_idx) in enumerate(skf.split(features, labels), 1):
+        model_path = os.path.join(args.model_dir, f"best_ae_fold{fold}.pth")
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model checkpoint not found: {model_path}")
+        
+        concept_autoencoder.load_state_dict(torch.load(model_path, map_location=device))
+        concept_autoencoder.eval()
 
-        graphs = build_graphs(
-            feature, significant_features, feature_impacts,
-            latent_dim=encoding_layers[-1], k_neighbors=5
-        )
+        print(f"\n[Strict OOF] Constructing Graphs for Fold {fold} validation/test patients...")
+        for idx in tqdm(val_idx, desc=f"Fold {fold}"):
+            feature = features[idx]
+            label = labels[idx]
+            patient_id = patient_ids[idx]
 
-        save_path = os.path.join(args.save_dir, f"{int(label)}", f"{patient_id}", "graphs.pt")
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
-        torch.save(graphs, save_path)
+            significant_features, feature_impacts = analyze_significant_features(
+                concept_autoencoder, feature, device, percentage=0.1
+            )
+
+            graphs = build_graphs(
+                feature, significant_features, feature_impacts,
+                latent_dim=encoding_layers[-1], k_neighbors=5
+            )
+
+            save_path = os.path.join(args.save_dir, f"{int(label)}", f"{patient_id}", "graphs.pt")
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            torch.save(graphs, save_path)
 
 
 if __name__ == "__main__":
