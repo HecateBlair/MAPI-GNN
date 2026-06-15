@@ -22,15 +22,13 @@ import matplotlib.pyplot as plt
 class Config:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Paths (will be updated via argparse)
     graphs_dir = "."
     csv_path = "."
 
-    random_state = 42
+    random_state = 37 
     n_splits = 5
     use_balanced_sampling = False
 
-    # Model Hyperparameters
     plane_in_dim = 1
     plane_hidden_dim = 64
     plane_out_dim = 32
@@ -40,7 +38,6 @@ class Config:
     num_classes = 2
     k_neighbors = 5
 
-    # Training Hyperparameters
     num_epochs = 100
     batch_size = 8
     patience = 15
@@ -103,7 +100,12 @@ class MaskedGraphConv(nn.Module):
             device = g.device
             src, dst = g.edges()
             mask = mask.to(device)
-            edge_mask = (mask[src] & mask[dst]).to(device)
+            
+            if self.training:
+                edge_mask = (mask[src] & mask[dst]).to(device)
+            else:
+                edge_mask = torch.ones_like(src, dtype=torch.bool).to(device)
+
             original_weights = g.edata.get('weight', None)
             g.edata['_masked_weight'] = edge_mask.float().unsqueeze(-1).to(device)
             if original_weights is not None:
