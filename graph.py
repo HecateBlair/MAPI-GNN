@@ -97,7 +97,6 @@ def build_graphs(feature, significant_features, feature_impacts, latent_dim, k_n
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--csv_path', type=str, required=True, help='Input features CSV')
-    # 将 --model_path 改为 --model_dir，指向存放 5 个折模型的文件夹
     parser.add_argument('--model_dir', type=str, required=True, help='Directory containing trained ConceptAutoEncoder models')
     parser.add_argument('--save_dir', type=str, default='./graphs', help='Output directory for graphs')
     args = parser.parse_args()
@@ -108,24 +107,20 @@ def main():
         raise FileNotFoundError(f"CSV file not found: {args.csv_path}")
 
     data = pd.read_csv(args.csv_path)
-    # Sort data to ensure alignment
     data = data.sort_values(by=data.columns[0])
 
     features = data.iloc[:, 2:].values
     labels = data.iloc[:, 1].values
     patient_ids = data.iloc[:, 0].values
 
-    # Must match training configuration
     encoding_layers = [256, 64, 24]
     input_dim = features.shape[1]
 
     concept_autoencoder = ConceptAutoEncoder(input_dim, encoding_layers).to(device)
 
-    # 【精准修复】：引入 StratifiedKFold 严格对齐 discriminator.py 的 37 号随机种子
     from sklearn.model_selection import StratifiedKFold
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=37)
 
-    # 循环读取每一折的模型，只为该折 Out-of-Fold (OOF) 的验证/测试样本建图
     for fold, (train_idx, val_idx) in enumerate(skf.split(features, labels), 1):
         model_path = os.path.join(args.model_dir, f"best_ae_fold{fold}.pth")
         if not os.path.exists(model_path):
