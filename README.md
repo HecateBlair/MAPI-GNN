@@ -62,11 +62,11 @@ python discriminator.py --csv_path ./features/all_folds_features.csv --save_dir 
 
 ### Step 3: Graph Construction
 
-Construct patient-specific planar graphs based on significant latent concepts.
+Construct patient-specific planar graphs based on significant latent concepts in a strict out-of-fold manner.
 
 ```bash
-# The model path matches the output from discriminator.py
-python graph.py --csv_path ./features/all_folds_features.csv --model_path ./checkpoints/best_concept_autoencoder_final.pth --save_dir ./graphs
+# The model dir points to the directory containing all 5 fold checkpoints from discriminator.py
+python graph.py --csv_path ./features/all_folds_features.csv --model_dir ./checkpoints --save_dir ./graphs
 
 ```
 
